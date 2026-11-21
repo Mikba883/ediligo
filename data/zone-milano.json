@@ -1,0 +1,20 @@
+{
+  "source": "esempio",
+  "note": "VALORI DI ESEMPIO, NON OMI. Fasce indicative per il prototipo, da sostituire con i dati OMI ufficiali tramite `npm run import-omi`.",
+  "period": null,
+  "unit": "euro/m² per abitazioni civili in stato normale",
+  "zones": [
+    { "id": "centro", "name": "Centro storico", "areas": "Duomo, Brera, Quadrilatero, Magenta", "min": 9500, "max": 12500 },
+    { "id": "porta-venezia", "name": "Porta Venezia", "areas": "Buenos Aires, Lazzaretto, Palestro", "min": 6800, "max": 8600 },
+    { "id": "porta-nuova", "name": "Porta Nuova e Isola", "areas": "Garibaldi, Isola, Gioia", "min": 7000, "max": 9200 },
+    { "id": "sempione", "name": "Sempione e Arco della Pace", "areas": "Sempione, Arena, Paolo Sarpi", "min": 6500, "max": 8500 },
+    { "id": "navigli", "name": "Navigli e Porta Genova", "areas": "Navigli, Porta Genova, Ticinese", "min": 6200, "max": 8000 },
+    { "id": "de-angeli", "name": "De Angeli e Wagner", "areas": "De Angeli, Wagner, Fiera", "min": 6000, "max": 7600 },
+    { "id": "citta-studi", "name": "Città Studi e Lambrate", "areas": "Città Studi, Lambrate, Piola", "min": 4800, "max": 6200 },
+    { "id": "nolo", "name": "NoLo e Loreto", "areas": "Pasteur, Loreto, Viale Monza", "min": 4200, "max": 5400 },
+    { "id": "san-siro", "name": "San Siro e Lotto", "areas": "Lotto, San Siro, QT8", "min": 4800, "max": 6200 },
+    { "id": "bicocca", "name": "Bicocca e Niguarda", "areas": "Bicocca, Niguarda, Greco", "min": 3600, "max": 4700 },
+    { "id": "bovisa", "name": "Bovisa e Affori", "areas": "Bovisa, Affori, Dergano", "min": 3300, "max": 4400 },
+    { "id": "corvetto", "name": "Corvetto e Rogoredo", "areas": "Corvetto, Rogoredo, Santa Giulia", "min": 3300, "max": 4400 }
+  ]
+}
