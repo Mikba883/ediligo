@@ -14,13 +14,13 @@ export function PhoneHero() {
 
           <div className="app-card">
             <div className="label">Valore di mercato</div>
-            <div className="app-value">355–455 mila €</div>
+            <div className="app-value">425–530 mila €</div>
             <div className="range">
               <i />
             </div>
             <div className="range-legend">
               <span>min</span>
-              <span>Annuncio consigliato 430 mila €</span>
+              <span>Annuncio consigliato 505 mila €</span>
             </div>
           </div>
 
@@ -101,7 +101,7 @@ export function PhoneHero() {
         </span>
         <span>
           <strong>Provvigione risparmiata</strong>
-          13.650 € restano a te
+          Oltre 16.000 € restano a te
         </span>
       </div>
     </div>

@@ -5,5 +5,5 @@ next-env.d.ts
 *.tsbuildinfo
 .env*
 !.env.example
-data/omi-raw/
+data/omi-raw/*.xlsx
 .DS_Store

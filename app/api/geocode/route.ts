@@ -29,47 +29,60 @@ export async function GET(req: Request) {
   const key = q.toLowerCase();
   if (cache.has(key)) return respond(cache.get(key)!);
 
-  const wait = lastCall + 1100 - Date.now();
-  if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-  lastCall = Date.now();
+  // Prima ricerca libera; se non trova, ricerca per via (strutturata), poi senza civico.
+  const variants: Record<string, string>[] = [
+    { q: /milano/i.test(q) ? q : `${q}, Milano` },
+    { street: q.replace(/,?\s*milano\s*$/i, ""), city: "Milano" },
+    { street: q.replace(/,?\s*milano\s*$/i, "").replace(/\b\d+\w?\b/g, "").trim(), city: "Milano" },
+    { q: `${q.replace(/montenapoleone/i, "Monte Napoleone").replace(/\b\d+\w?\b/g, "").trim()}, Milano` },
+  ];
 
-  const url = new URL("https://nominatim.openstreetmap.org/search");
-  url.search = new URLSearchParams({
-    q: /milano/i.test(q) ? q : `${q}, Milano`,
-    format: "jsonv2",
-    addressdetails: "1",
-    limit: "1",
-    countrycodes: "it",
-    viewbox: VIEWBOX,
-    bounded: "1",
-    "accept-language": "it",
-  }).toString();
-
-  let res: Response;
-  try {
-    res = await fetch(url, { headers: { "User-Agent": "Ediligo-prototipo/0.1 (valutazione immobili Milano)" } });
-  } catch {
-    return NextResponse.json({ error: "Servizio indirizzi non raggiungibile. Riprova tra poco." }, { status: 502 });
+  let data: Array<{ lat: string; lon: string; address?: Record<string, string> }> = [];
+  for (const v of variants) {
+    const wait = lastCall + 1100 - Date.now();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    lastCall = Date.now();
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.search = new URLSearchParams({
+      ...v,
+      format: "jsonv2",
+      addressdetails: "1",
+      limit: "3",
+      countrycodes: "it",
+      viewbox: VIEWBOX,
+      bounded: "1",
+      "accept-language": "it",
+    }).toString();
+    let res: Response;
+    try {
+      res = await fetch(url, { headers: { "User-Agent": "Ediligo-prototipo/0.1 (valutazione immobili Milano)" } });
+    } catch {
+      return NextResponse.json({ error: "Servizio indirizzi non raggiungibile. Riprova tra poco." }, { status: 502 });
+    }
+    if (!res.ok) {
+      return NextResponse.json({ error: "Servizio indirizzi non disponibile. Riprova tra poco." }, { status: 502 });
+    }
+    const found = (await res.json()) as typeof data;
+    data = found.filter((d) => {
+      const a = d.address ?? {};
+      return (a.city === "Milano" || a.town === "Milano" || a.village === "Milano") && (a.road || a.pedestrian || a.square);
+    });
+    if (data.length) break;
   }
-  if (!res.ok) {
-    return NextResponse.json({ error: "Servizio indirizzi non disponibile. Riprova tra poco." }, { status: 502 });
-  }
 
-  const data = (await res.json()) as Array<{
-    lat: string;
-    lon: string;
-    address?: Record<string, string>;
-  }>;
   const first = data[0];
   const a = first?.address ?? {};
-  const inMilano = first && (a.city === "Milano" || a.town === "Milano" || a.village === "Milano");
+  const road = a.road ?? a.pedestrian ?? a.square;
+  // Se l'utente ha scritto un civico ma la ricerca è caduta sulla via, teniamo il civico scritto.
+  const typedNumber = q.match(/\b(\d+\w?)\b/)?.[1] ?? null;
 
   const hit: Hit | null =
-    first && inMilano && a.road
+    first && road
       ? {
-          label: [a.road, a.house_number].filter(Boolean).join(", ") + `, ${a.postcode ? a.postcode + " " : ""}Milano`,
-          street: a.road,
-          houseNumber: a.house_number ?? null,
+          label:
+            [road, a.house_number ?? typedNumber].filter(Boolean).join(", ") + `, ${a.postcode ? a.postcode + " " : ""}Milano`,
+          street: road,
+          houseNumber: a.house_number ?? typedNumber,
           quarter: a.quarter ?? a.neighbourhood ?? a.suburb ?? null,
           postcode: a.postcode ?? null,
           lat: Number(first.lat),

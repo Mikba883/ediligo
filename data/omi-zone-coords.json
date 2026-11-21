@@ -1,0 +1,364 @@
+{
+  "B12": {
+    "lat": 45.46599,
+    "lng": 9.19019,
+    "from": [
+      "DUOMO",
+      "San Babila",
+      "MONTENAPOLEONE",
+      "MISSORI",
+      "CAIROLI"
+    ]
+  },
+  "B13": {
+    "lat": 45.459,
+    "lng": 9.188,
+    "from": [
+      "Università Statale, San Lorenzo (corretta a mano)"
+    ]
+  },
+  "B15": {
+    "lat": 45.47152,
+    "lng": 9.18774,
+    "from": [
+      "BRERA"
+    ]
+  },
+  "B16": {
+    "lat": 45.46589,
+    "lng": 9.17759,
+    "from": [
+      "Sant'Ambrogio",
+      "CADORNA",
+      "Via Dante"
+    ]
+  },
+  "B17": {
+    "lat": 45.47147,
+    "lng": 9.1735,
+    "from": [
+      "PARCO SEMPIONE",
+      "ARCO DELLA PACE",
+      "CORSO MAGENTA"
+    ]
+  },
+  "B18": {
+    "lat": 45.47298,
+    "lng": 9.19238,
+    "from": [
+      "TURATI",
+      "MOSCOVA",
+      "CORSO VENEZIA"
+    ]
+  },
+  "B19": {
+    "lat": 45.45726,
+    "lng": 9.20461,
+    "from": [
+      "PORTA VITTORIA",
+      "PORTA ROMANA"
+    ]
+  },
+  "B20": {
+    "lat": 45.45212,
+    "lng": 9.1993,
+    "from": [
+      "PORTA VIGENTINA",
+      "PORTA ROMANA"
+    ]
+  },
+  "B21": {
+    "lat": 45.45633,
+    "lng": 9.17206,
+    "from": [
+      "PORTA TICINESE",
+      "PORTA GENOVA",
+      "VIA SAN VITTORE"
+    ]
+  },
+  "C12": {
+    "lat": 45.48041,
+    "lng": 9.22165,
+    "from": [
+      "PISANI",
+      "BUENOS AIRES",
+      "REGINA GIOVANNA"
+    ]
+  },
+  "C13": {
+    "lat": 45.478,
+    "lng": 9.156,
+    "from": [
+      "City Life (corretta a mano)"
+    ]
+  },
+  "C14": {
+    "lat": 45.47995,
+    "lng": 9.1926,
+    "from": [
+      "PORTA NUOVA"
+    ]
+  },
+  "C16": {
+    "lat": 45.48779,
+    "lng": 9.17317,
+    "from": [
+      "CENISIO",
+      "FARINI",
+      "SARPI"
+    ]
+  },
+  "C17": {
+    "lat": 45.46884,
+    "lng": 9.16256,
+    "from": [
+      "SEMPIONE",
+      "PAGANO",
+      "WASHINGTON"
+    ]
+  },
+  "C18": {
+    "lat": 45.44977,
+    "lng": 9.17024,
+    "from": [
+      "SOLARI",
+      "Porta GENOVA",
+      "ASCANIO SFORZA"
+    ]
+  },
+  "C19": {
+    "lat": 45.45,
+    "lng": 9.194,
+    "from": [
+      "Tabacchi, Sarfatti, Crema (corretta a mano)"
+    ]
+  },
+  "C20": {
+    "lat": 45.4612,
+    "lng": 9.2114,
+    "from": [
+      "LIBIA",
+      "XXII MARZO",
+      "INDIPENDENZA"
+    ]
+  },
+  "D10": {
+    "lat": 45.49249,
+    "lng": 9.24451,
+    "from": [
+      "PARCO LAMBRO",
+      "FELTRE",
+      "UDINE"
+    ]
+  },
+  "D12": {
+    "lat": 45.47095,
+    "lng": 9.22933,
+    "from": [
+      "PIOLA",
+      "ARGONNE",
+      "CORSICA"
+    ]
+  },
+  "D13": {
+    "lat": 45.48207,
+    "lng": 9.24286,
+    "from": [
+      "LAMBRATE",
+      "RUBATTINO",
+      "ROMBON"
+    ]
+  },
+  "D16": {
+    "lat": 45.45009,
+    "lng": 9.22143,
+    "from": [
+      "TITO LIVIO",
+      "TERTULLIANO",
+      "LONGANESI",
+      "ORTOMERCATO"
+    ]
+  },
+  "D18": {
+    "lat": 45.43212,
+    "lng": 9.18686,
+    "from": [
+      "VIGENTINO",
+      "CHIESA ROSSA"
+    ]
+  },
+  "D20": {
+    "lat": 45.44134,
+    "lng": 9.19745,
+    "from": [
+      "ORTLES",
+      "SPADOLINI",
+      "BAZZI"
+    ]
+  },
+  "D21": {
+    "lat": 45.43733,
+    "lng": 9.1575,
+    "from": [
+      "BARONA",
+      "FAMAGOSTA",
+      "FAENZA"
+    ]
+  },
+  "D24": {
+    "lat": 45.46484,
+    "lng": 9.13897,
+    "from": [
+      "SEGESTA",
+      "ARETUSA",
+      "VESPRI SICILIANI"
+    ]
+  },
+  "D25": {
+    "lat": 45.45682,
+    "lng": 9.11883,
+    "from": [
+      "LORENTEGGIO",
+      "INGANNI",
+      "BISCEGLIE",
+      "SAN CARLO Borromeo"
+    ]
+  },
+  "D28": {
+    "lat": 45.48416,
+    "lng": 9.13463,
+    "from": [
+      "IPPODROMO",
+      "CAPRILLI",
+      "MONTE STELLA"
+    ]
+  },
+  "D31": {
+    "lat": 45.50309,
+    "lng": 9.17044,
+    "from": [
+      "BOVISA",
+      "BAUSAN",
+      "IMBONATI"
+    ]
+  },
+  "D32": {
+    "lat": 45.51956,
+    "lng": 9.16442,
+    "from": [
+      "BOVISASCA",
+      "AFFORI",
+      "COMASINA"
+    ]
+  },
+  "D33": {
+    "lat": 45.52075,
+    "lng": 9.19591,
+    "from": [
+      "NIGUARDA",
+      "BIGNAMI",
+      "PARCO NORD"
+    ]
+  },
+  "D34": {
+    "lat": 45.51014,
+    "lng": 9.20804,
+    "from": [
+      "SARCA",
+      "BICOCCA"
+    ]
+  },
+  "D35": {
+    "lat": 45.50967,
+    "lng": 9.23904,
+    "from": [
+      "CRESCENZAGO",
+      "GORLA",
+      "QUARTIERE ADRIANO"
+    ]
+  },
+  "D36": {
+    "lat": 45.49619,
+    "lng": 9.21092,
+    "from": [
+      "MAGGIOLINA",
+      "PARCO TROTTER",
+      "LEONCAVALLO"
+    ]
+  },
+  "D37": {
+    "lat": 45.45178,
+    "lng": 9.24903,
+    "from": [
+      "FORLANINI",
+      "MECENATE",
+      "PONTE LAMBRO"
+    ]
+  },
+  "D38": {
+    "lat": 45.43409,
+    "lng": 9.24363,
+    "from": [
+      "SANTA GIULIA",
+      "ROGOREDO"
+    ]
+  },
+  "D39": {
+    "lat": 45.51646,
+    "lng": 9.10084,
+    "from": [
+      "CASCINA MERLATA",
+      "EXPO"
+    ]
+  },
+  "D40": {
+    "lat": 45.5046,
+    "lng": 9.13249,
+    "from": [
+      "MUSOCCO",
+      "CERTOSA"
+    ]
+  },
+  "E5": {
+    "lat": 45.46026,
+    "lng": 9.07917,
+    "from": [
+      "BAGGIO",
+      "Quartiere ROMANO",
+      "MUGGIANO"
+    ]
+  },
+  "E6": {
+    "lat": 45.49082,
+    "lng": 9.11512,
+    "from": [
+      "GALLARATESE",
+      "LAMPUGNANO",
+      "Parco TRENNO",
+      "BONOLA"
+    ]
+  },
+  "E7": {
+    "lat": 45.40092,
+    "lng": 9.1795,
+    "from": [
+      "MISSAGLIA",
+      "GRATOSOGLIO"
+    ]
+  },
+  "E8": {
+    "lat": 45.5181,
+    "lng": 9.13256,
+    "from": [
+      "QUARTO OGGIARO",
+      "SACCO"
+    ]
+  },
+  "C15": {
+    "lat": 45.49,
+    "lng": 9.198,
+    "from": [
+      "Stazione Centrale, Viale Stelvio (corretta a mano)"
+    ]
+  }
+}

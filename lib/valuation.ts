@@ -1,8 +1,19 @@
 import zoneData from "@/data/zone-milano.json";
 
-export type Zone = { id: string; name: string; areas: string; min: number; max: number; lat?: number; lng?: number };
+export type Zone = {
+  id: string;
+  name: string;
+  areas: string;
+  min: number; // OMI stato normale
+  max: number;
+  ottimoMin?: number | null; // OMI stato ottimo
+  ottimoMax?: number | null;
+  lat?: number;
+  lng?: number;
+  history?: { p: string; mid: number }[];
+};
 
-export const zones: Zone[] = zoneData.zones;
+export const zones: Zone[] = zoneData.zones as Zone[];
 export const zoneSource = {
   isSample: zoneData.source === "esempio",
   label: zoneData.source === "esempio" ? "Dati di esempio" : `Dati OMI ${zoneData.period ?? ""}`.trim(),
@@ -25,6 +36,15 @@ export function zoneForPoint(lat: number, lng: number): Zone | null {
   return best;
 }
 
+// Andamento dei prezzi OMI della zona (centro della forchetta) negli ultimi N anni.
+export function zoneTrend(zone: Zone, years: number): { pct: number; from: string; to: string } | null {
+  const h = zone.history;
+  if (!h || h.length < years * 2 + 1) return null;
+  const last = h[h.length - 1];
+  const first = h[h.length - 1 - years * 2];
+  return { pct: last.mid / first.mid - 1, from: first.p, to: last.p };
+}
+
 export type Condition = "da-ristrutturare" | "buono" | "ristrutturato" | "nuovo";
 export type Extra = "balcone" | "terrazzo" | "giardino" | "box" | "cantina";
 export type Energy = "non-so" | "alta" | "media" | "bassa";
@@ -43,6 +63,9 @@ export type Adjustment = { label: string; pct: number };
 
 export type ValuationResult = {
   zone: Zone;
+  baseLabel: string;
+  baseMin: number;
+  baseMax: number;
   low: number;
   high: number;
   sqmLow: number;
@@ -51,13 +74,32 @@ export type ValuationResult = {
   adjustments: Adjustment[];
 };
 
-// Coefficienti semplici e dichiarati: ipotesi di prodotto da tarare sulle compravendite reali.
-const conditionAdj: Record<Condition, Adjustment | null> = {
-  "da-ristrutturare": { label: "Da ristrutturare", pct: -0.15 },
-  buono: null,
-  ristrutturato: { label: "Ristrutturata da poco", pct: 0.08 },
-  nuovo: { label: "Nuova o mai abitata", pct: 0.15 },
+// Lo stato della casa sceglie la fascia OMI: "normale" o "ottimo".
+// Da ristrutturare: metà bassa della fascia normale, con un ulteriore -10% sul minimo.
+// Ristrutturata: a metà tra normale e ottimo. Nuova: fascia ottimo.
+const conditionLabel: Record<Condition, string> = {
+  "da-ristrutturare": "Da ristrutturare: metà bassa della fascia OMI normale",
+  buono: "In buono stato: fascia OMI normale",
+  ristrutturato: "Ristrutturata: tra fascia OMI normale e ottimo",
+  nuovo: "Nuova: fascia OMI ottimo",
 };
+
+function baseRange(zone: Zone, condition: Condition): [number, number] {
+  const nMin = zone.min;
+  const nMax = zone.max;
+  const oMin = zone.ottimoMin ?? nMax;
+  const oMax = zone.ottimoMax ?? nMax * 1.15;
+  switch (condition) {
+    case "da-ristrutturare":
+      return [nMin * 0.9, (nMin + nMax) / 2];
+    case "buono":
+      return [nMin, nMax];
+    case "ristrutturato":
+      return [(nMin + oMin) / 2, (nMax + oMax) / 2];
+    case "nuovo":
+      return [oMin, oMax];
+  }
+}
 
 const extraAdj: Record<Extra, Adjustment> = {
   balcone: { label: "Balcone", pct: 0.02 },
@@ -90,21 +132,24 @@ export function estimate(input: ValuationInput): ValuationResult | null {
   const zone = zones.find((z) => z.id === input.zoneId);
   if (!zone || !Number.isFinite(input.sqm) || input.sqm < 15 || input.sqm > 1000) return null;
 
+  const [baseMin, baseMax] = baseRange(zone, input.condition);
   const adjustments = [
-    conditionAdj[input.condition],
     floorAdj(input.floor, input.lift),
     ...input.extras.map((e) => extraAdj[e]),
     energyAdj[input.energy],
   ].filter((a): a is Adjustment => a !== null);
 
   const factor = adjustments.reduce((f, a) => f * (1 + a.pct), 1);
-  const sqmLow = zone.min * factor;
-  const sqmHigh = zone.max * factor;
+  const sqmLow = baseMin * factor;
+  const sqmHigh = baseMax * factor;
   const low = round5k(sqmLow * input.sqm);
   const high = round5k(sqmHigh * input.sqm);
 
   return {
     zone,
+    baseLabel: conditionLabel[input.condition],
+    baseMin: Math.round(baseMin / 10) * 10,
+    baseMax: Math.round(baseMax / 10) * 10,
     low,
     high,
     sqmLow: Math.round(sqmLow / 10) * 10,

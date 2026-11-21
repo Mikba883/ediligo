@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "import-omi": "node scripts/import-omi.mjs"
+    "build-omi": "node scripts/build-omi.mjs",
+    "geocode-zones": "node scripts/geocode-zones.mjs"
   },
   "dependencies": {
     "next": "^16.4.6",

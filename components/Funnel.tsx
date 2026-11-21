@@ -13,6 +13,7 @@ import {
   parseListingUrl,
   zoneForPoint,
   zoneSource,
+  zoneTrend,
   zones,
 } from "@/lib/valuation";
 
@@ -432,35 +433,52 @@ export function Funnel({
                   <AnalysisRow
                     done={phase >= 2}
                     label="Zona"
-                    value={phase >= 2 && zone ? `${zone.name}${geo.status === "ok" && geo.hit.quarter ? ` (${geo.hit.quarter})` : ""}` : "Individuo la zona"}
+                    value={phase >= 2 && zone ? `${zone.id}, ${zone.name}` : "Individuo la zona"}
                   />
                   <AnalysisRow
                     done={phase >= 3}
                     label="Prezzi di zona"
-                    value={phase >= 3 && zone ? `${euro(zone.min)} – ${euro(zone.max)} al m²` : "Recupero i prezzi"}
+                    value={phase >= 3 && zone ? `${euro(zone.min)} – ${euro(zone.max)} al m², ${zoneSource.label}` : "Recupero i prezzi"}
                   />
+                  {zone && zoneTrend(zone, 5) && (
+                    <AnalysisRow
+                      done={phase >= 3}
+                      label="Andamento della zona"
+                      value={phase >= 3 ? `${signPct(zoneTrend(zone, 5)!.pct)} in 5 anni (OMI)` : "Calcolo l'andamento"}
+                    />
+                  )}
                 </ul>
               )}
 
               {(changeZone || geo.status === "error") && (
-                <div className="q-body zone-grid" role="radiogroup" aria-label="Zona" style={{ marginTop: "1.5rem" }}>
-                  {zones.map((z) => (
+                <div className="q-body field" style={{ marginTop: "1.5rem" }}>
+                  <label htmlFor="zone-pick">Zona OMI</label>
+                  <select
+                    id="zone-pick"
+                    className="select"
+                    value={zoneId}
+                    onChange={(e) => setZoneId(e.target.value)}
+                  >
+                    <option value="">Scegli la zona</option>
+                    {zones.map((z) => (
+                      <option key={z.id} value={z.id}>
+                        {z.id}, {z.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="q-actions">
                     <button
-                      key={z.id}
                       type="button"
-                      role="radio"
-                      aria-checked={zoneId === z.id}
-                      className="choice"
+                      className="btn btn-blue"
+                      disabled={!zoneId}
                       onClick={() => {
-                        setZoneId(z.id);
                         setChangeZone(false);
                         if (geo.status === "error") next();
                       }}
                     >
-                      <strong>{z.name}</strong>
-                      <span>{z.areas}</span>
+                      Usa questa zona
                     </button>
-                  ))}
+                  </div>
                 </div>
               )}
 
@@ -837,9 +855,13 @@ export function Funnel({
 
               <div className="result-list">
                 <div>
-                  <span>Prezzo al m² della zona</span>
+                  <span>Zona OMI {result.zone.id}</span>
+                  <span>{result.zone.name}</span>
+                </div>
+                <div>
+                  <span>{result.baseLabel}</span>
                   <span>
-                    {euro(result.zone.min)} – {euro(result.zone.max)}
+                    {euro(result.baseMin)} – {euro(result.baseMax)} al m²
                   </span>
                 </div>
                 {result.adjustments.map((a) => (
@@ -860,6 +882,18 @@ export function Funnel({
                 <p className="notice" style={{ background: "var(--sky)", color: "var(--sky-ink)" }}>
                   Stima con indirizzo e metri quadri. Con il tuo annuncio (piano, stato, foto) la affiniamo nel report
                   completo.
+                </p>
+              )}
+              {zoneTrend(result.zone, 5) && (
+                <p className="notice" style={{ background: "var(--mint)", color: "var(--mint-ink)" }}>
+                  Nella tua zona i prezzi OMI sono {trendText(zoneTrend(result.zone, 5)!.pct)} negli ultimi 5 anni
+                  {zoneTrend(result.zone, 1) ? ` e ${trendText(zoneTrend(result.zone, 1)!.pct)} nell'ultimo anno` : ""}.
+                </p>
+              )}
+              {!zoneSource.isSample && (
+                <p className="small muted" style={{ marginTop: "0.75rem" }}>
+                  Fonte: quotazioni OMI dell&apos;Agenzia delle Entrate, {zoneSource.label.replace("Dati OMI ", "semestre ")}, abitazioni
+                  civili. Zona assegnata in base alla posizione dell&apos;indirizzo: è una stima, non una perizia.
                 </p>
               )}
               {zoneSource.isSample && (
@@ -898,6 +932,11 @@ export function Funnel({
     </div>
   );
 }
+
+const trendText = (pct: number) =>
+  pct >= 0 ? `saliti del ${Math.round(pct * 100)}%` : `scesi del ${Math.abs(Math.round(pct * 100))}%`;
+
+const signPct = (pct: number) => `${pct >= 0 ? "+" : "−"}${Math.abs(Math.round(pct * 100))}%`;
 
 const fmtPhone = (p: string) => p.replace(/^\+39(\d{3})(\d{3})(\d+)$/, "+39 $1 $2 $3");
 

@@ -25,17 +25,18 @@ Poi apri http://localhost:3000.
 
 ## Dati di zona
 
-`data/zone-milano.json` contiene **valori di esempio, non OMI**. Il sito lo dichiara nella pagina di quotazione. Per usare i dati ufficiali:
-
-1. Scarica dal sito dell'Agenzia delle Entrate (Forniture dati OMI, accesso con SPID) i file `..._VALORI.csv` e `..._ZONE.csv` del semestre più recente per la provincia di Milano.
-2. Copiali in `data/omi-raw/` (esclusa da git).
-3. Esegui:
+`data/zone-milano.json` contiene le **quotazioni OMI dell'Agenzia delle Entrate per il Comune di Milano, semestre 2026/1** (42 zone, abitazioni civili, stato normale e ottimo) con lo storico dal 2004 per calcolare l'andamento dei prezzi. Si genera dall'export in `data/omi-raw/`:
 
 ```bash
-npm run import-omi -- data/omi-raw/NOMEFILE_VALORI.csv data/omi-raw/NOMEFILE_ZONE.csv 2025/2
+npm run build-omi -- data/omi-raw/OMI_Milano_2004-2026.csv
 ```
 
-I correttivi (stato, piano, esterni, box, classe energetica) sono in `lib/valuation.ts` e vanno tarati sulle compravendite reali.
+Come funziona la stima:
+- lo **stato della casa** sceglie la fascia OMI: buono = normale, nuova = ottimo, ristrutturata = a metà, da ristrutturare = metà bassa della normale;
+- piano, ascensore, extra e classe energetica aggiungono correttivi dichiarati (`lib/valuation.ts`), da tarare sulle compravendite reali;
+- l'**indirizzo** viene assegnato alla zona OMI con il centro più vicino (`data/omi-zone-coords.json`, calcolato con `npm run geocode-zones` e 4 zone corrette a mano). È un'approssimazione: con i confini ufficiali delle zone (file KML dell'Agenzia delle Entrate) l'assegnazione diventa esatta.
+
+`data/omi-raw/OMI_capoluoghi_2026-1.csv` contiene il semestre 2026/1 di tutti i capoluoghi italiani, utile per allargare il servizio ad altre città.
 
 ## Configurazione
 
