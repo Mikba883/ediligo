@@ -1,12 +1,29 @@
 import zoneData from "@/data/zone-milano.json";
 
-export type Zone = { id: string; name: string; areas: string; min: number; max: number };
+export type Zone = { id: string; name: string; areas: string; min: number; max: number; lat?: number; lng?: number };
 
 export const zones: Zone[] = zoneData.zones;
 export const zoneSource = {
   isSample: zoneData.source === "esempio",
   label: zoneData.source === "esempio" ? "Dati di esempio" : `Dati OMI ${zoneData.period ?? ""}`.trim(),
 };
+
+// Assegna un punto alla zona con il centro più vicino. È un'approssimazione per il prototipo:
+// con i dati OMI reali si usano i confini ufficiali delle zone (file KML dell'Agenzia delle Entrate).
+export function zoneForPoint(lat: number, lng: number): Zone | null {
+  let best: Zone | null = null;
+  let bestD = Infinity;
+  const kx = Math.cos((lat * Math.PI) / 180);
+  for (const z of zones) {
+    if (z.lat === undefined || z.lng === undefined) continue;
+    const d = ((z.lng - lng) * kx) ** 2 + (z.lat - lat) ** 2;
+    if (d < bestD) {
+      bestD = d;
+      best = z;
+    }
+  }
+  return best;
+}
 
 export type Condition = "da-ristrutturare" | "buono" | "ristrutturato" | "nuovo";
 export type Extra = "balcone" | "terrazzo" | "giardino" | "box" | "cantina";

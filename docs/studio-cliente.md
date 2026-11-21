@@ -42,11 +42,39 @@ Regole di scrittura: si parla al cliente con il "tu", verbi concreti, frasi cort
 - In apertura un **telefono con l'app vera**: valutazione, checklist, e notifiche che arrivano (l'unico movimento automatico della pagina).
 - Angoli molto arrotondati (24–32 px) come le app, nessuna ombra grigia generica.
 
-## Il percorso "Scopri quanto vale casa tua"
+## Il percorso "Scopri quanto vale casa tua" (v2.1)
 
-1. Da dove partiamo: **link dell'annuncio** oppure **dati della casa**.
-2. (Link) incolli il link di Immobiliare.it, Idealista, Casa.it, Subito o Wikicasa → confermi zona e metri quadri per la stima immediata; l'annuncio lo analizza il team per la valutazione dettagliata.
-3. (Dati) zona → metri quadri → locali → stato → piano e ascensore → extra (balcone, terrazzo, giardino, box, cantina) → classe energetica.
-4. Quando vuoi vendere (serve a noi per capire l'urgenza).
-5. **Risultato subito, senza registrazione:** intervallo di valore, prezzo d'annuncio consigliato, come ci siamo arrivati.
-6. Dopo il risultato: report completo e controllo documenti gratis lasciando un contatto, con consensi separati.
+1. Si parte dall'indirizzo scritto nella home, oppure da «Hai già un annuncio? Incolla il link».
+2. **Indirizzo** (via e civico) → **analisi**: troviamo l'indirizzo, la zona e i prezzi di zona, e lo mostriamo passo per passo. Se la zona non è giusta, il cliente la cambia.
+3. Metri quadri → stato → piano e ascensore → extra (balcone, terrazzo, giardino, box, cantina) → classe energetica. Con il link dell'annuncio: solo metri quadri.
+4. Quando vuoi vendere (serve a capire l'urgenza).
+5. **«La tua valutazione è pronta»**: scheda del valore sfocata, nome e cellulare, consensi separati.
+6. **Codice SMS** per verificare il cellulare.
+7. **Risultato**: intervallo di valore, prezzo d'annuncio consigliato, come ci siamo arrivati, e «ti chiamiamo entro un giorno lavorativo».
+
+## Analisi della call to action (v2.1)
+
+### Cosa fanno gli altri
+
+| Servizio | CTA principale | Forma |
+|---|---|---|
+| Casavo | «Valuta» | Campo indirizzo nell'apertura + bottone, «valutazione in 3 minuti» sotto |
+| RockAgent | «Valuta casa» | Campo indirizzo + bottone rosso nell'apertura, ripetuto nel menu |
+| Dove.it | «Valuta online la tua casa» | Solo bottone, «gratis e senza impegno» |
+| RealAdvisor | «Valuta il tuo immobile» | Bottone nel menu + riquadro modulo nell'apertura |
+| Purplebricks | «Book a free valuation» | Bottone, ripetuto in alto e dopo ogni sezione |
+| Airbnb Host | «Inizia» | Prima un risultato (stima di guadagno), poi il bottone |
+| Zillow / Opendoor (USA) | «Enter your address» / «Get my free offer» | Campo indirizzo come unico elemento dell'apertura |
+
+### Cosa funziona (e cosa scegliamo)
+
+1. **Il primo gesto è scrivere l'indirizzo, non cliccare un bottone.** I leader della valutazione online mettono il campo indirizzo direttamente nell'apertura: chi scrive l'indirizzo ha già iniziato, e continuare costa meno che partire. → Campo «Indirizzo della casa» + bottone «Scopri quanto vale» nell'apertura e nella chiusura.
+2. **Il bottone dice il risultato, non l'azione tecnica.** «Scopri quanto vale» batte «Invia» o «Inizia»; le guide di settore indicano che le formule in prima persona e orientate al risultato convertono meglio di quelle generiche.
+3. **Rassicurazione subito sotto:** gratis, 2 minuti, nessun impegno.
+4. **Percorso a più passaggi, una domanda per schermata, risultato subito dopo:** riduce l'abbandono rispetto a un modulo lungo.
+5. **Contatto prima del risultato, ma con il risultato "in vista":** mostriamo la scheda del valore sfocata con «Si sblocca dopo la verifica». Chi è arrivato fin lì ha investito due minuti e lascia il numero.
+6. **Cellulare verificato con codice SMS:** riduce numeri falsi e perditempo, e ogni contatto è richiamabile. Costo: qualche abbandono in più all'ultimo passaggio. È da misurare: se l'abbandono è troppo alto, si prova la variante "risultato subito, verifica per il report completo".
+7. **CTA sempre a portata di pollice su telefono:** barra fissa in basso.
+8. **Alternativa per chi ha già un annuncio:** link «Hai già un annuncio? Incolla il link» sotto il campo indirizzo.
+
+Fonti: [LeadCapture](https://leadcapture.io/blog/home-valuation-landing-page/), [Luxury Presence](https://www.luxurypresence.com/blogs/home-valuation-landing-pages-capture-seller-leads/), [Heyflow](https://heyflow.com/blog/property-valuation-configurator-real-estate/), [Leadpages](https://leadpages.com/blog/how-real-estate-agents-use-landing-pages-to-get-seller-leads-2026), benchmark in `docs/benchmark/`. Sono soprattutto fonti di fornitori di strumenti: i numeri vanno presi come indicazione, non come obiettivo.

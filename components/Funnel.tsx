@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "./Icon";
-import { LeadForm } from "./LeadForm";
 import { Logo } from "./Logo";
 import { euro, packages } from "@/lib/site";
 import {
@@ -12,18 +11,35 @@ import {
   type Extra,
   estimate,
   parseListingUrl,
+  zoneForPoint,
   zoneSource,
   zones,
 } from "@/lib/valuation";
 
 type Mode = "link" | "dati";
-type StepId = "start" | "link" | "zone" | "sqm" | "condition" | "floor" | "extras" | "energy" | "timing" | "result";
+type StepId = "start" | "link" | "address" | "analysis" | "contact" | "otp" | "sqm" | "condition" | "floor" | "extras" | "energy" | "timing" | "result";
 type Timing = "subito" | "3-mesi" | "6-mesi" | "curiosita";
 
 const FLOWS: Record<Mode, StepId[]> = {
-  link: ["start", "link", "zone", "sqm", "timing", "result"],
-  dati: ["start", "zone", "sqm", "condition", "floor", "extras", "energy", "timing", "result"],
+  link: ["start", "link", "address", "analysis", "sqm", "timing", "contact", "otp", "result"],
+  dati: ["start", "address", "analysis", "sqm", "condition", "floor", "extras", "energy", "timing", "contact", "otp", "result"],
 };
+const NOT_QUESTIONS: StepId[] = ["start", "analysis", "contact", "otp", "result"];
+
+type GeoHit = {
+  label: string;
+  street: string;
+  houseNumber: string | null;
+  quarter: string | null;
+  postcode: string | null;
+  lat: number;
+  lng: number;
+};
+type Geo =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "ok"; hit: GeoHit }
+  | { status: "error"; error: string };
 
 const conditionOptions: [Condition, string, string][] = [
   ["da-ristrutturare", "Da ristrutturare", "Impianti o bagni da rifare"],
@@ -51,12 +67,29 @@ const timingOptions: [Timing, string, string][] = [
   ["curiosita", "Voglio solo sapere quanto vale", "Per ora nessun piano"],
 ];
 
-export function Funnel({ packageId }: { packageId?: string }) {
-  const [mode, setMode] = useState<Mode>("dati");
-  const [index, setIndex] = useState(0);
+export function Funnel({
+  packageId,
+  initialAddress,
+  initialMode,
+}: {
+  packageId?: string;
+  initialAddress?: string;
+  initialMode?: string;
+}) {
+  const startFromAddress = Boolean(initialAddress && initialAddress.trim().length >= 4 && /\d/.test(initialAddress));
+  const startFromLink = !startFromAddress && initialMode === "link";
+  const [mode, setMode] = useState<Mode>(startFromLink ? "link" : "dati");
+  const [index, setIndex] = useState(
+    startFromAddress ? FLOWS.dati.indexOf("analysis") : startFromLink ? FLOWS.link.indexOf("link") : 0,
+  );
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState("");
   const [zoneId, setZoneId] = useState("");
+  const [address, setAddress] = useState(initialAddress?.trim() ?? "");
+  const [addressError, setAddressError] = useState("");
+  const [geo, setGeo] = useState<Geo>({ status: "idle" });
+  const [phase, setPhase] = useState(0);
+  const [changeZone, setChangeZone] = useState(false);
   const [sqm, setSqm] = useState("");
   const [sqmError, setSqmError] = useState("");
   const [condition, setCondition] = useState<Condition>("buono");
@@ -65,25 +98,144 @@ export function Funnel({ packageId }: { packageId?: string }) {
   const [extras, setExtras] = useState<Extra[]>([]);
   const [energy, setEnergy] = useState<Energy>("non-so");
   const [timing, setTiming] = useState<Timing | "">("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [privacy, setPrivacy] = useState(false);
+  const [marketing, setMarketing] = useState(false);
+  const [contactError, setContactError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sentTo, setSentTo] = useState("");
+  const [demo, setDemo] = useState(false);
+  const [code, setCode] = useState("");
+  const [codeError, setCodeError] = useState("");
+  const [resendIn, setResendIn] = useState(0);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   const flow = FLOWS[mode];
   const step = flow[index];
   const total = flow.length - 1;
   const progress = step === "start" ? 4 : Math.round((index / total) * 100);
+  const questions = flow.filter((x) => !NOT_QUESTIONS.includes(x));
   const chosenPackage = packages.find((p) => p.id === packageId && p.price > 0);
 
   useEffect(() => {
     titleRef.current?.focus();
   }, [step]);
 
+  // Analisi dell'indirizzo: ricerca reale, poi le tre conferme compaiono una alla volta.
+  const queried = useRef<string | null>(null);
+  useEffect(() => {
+    if (step !== "analysis" || queried.current === address) return;
+    queried.current = address;
+    const timers: number[] = [];
+    setGeo({ status: "loading" });
+    setPhase(0);
+    setChangeZone(false);
+    fetch(`/api/geocode?q=${encodeURIComponent(address)}`)
+      .then(async (r) => {
+        const json = await r.json().catch(() => ({}));
+        if (queried.current !== address) return;
+        if (!r.ok) {
+          setGeo({ status: "error", error: json.error ?? "Non riusciamo a trovare l'indirizzo." });
+          return;
+        }
+        const hit = json as GeoHit;
+        setGeo({ status: "ok", hit });
+        setZoneId(zoneForPoint(hit.lat, hit.lng)?.id ?? "");
+        [1, 2, 3].forEach((n) => timers.push(window.setTimeout(() => setPhase(n), n * 550)));
+      })
+      .catch(() => {
+        if (queried.current === address) setGeo({ status: "error", error: "Sei offline. Controlla la connessione e riprova." });
+      });
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [step, address]);
+
   const result = useMemo(
-    () =>
-      step === "result"
-        ? estimate({ zoneId, sqm: Number(sqm), condition, floor, lift, extras, energy })
-        : null,
-    [step, zoneId, sqm, condition, floor, lift, extras, energy],
+    () => estimate({ zoneId, sqm: Number(sqm), condition, floor, lift, extras, energy }),
+    [zoneId, sqm, condition, floor, lift, extras, energy],
   );
+
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = window.setTimeout(() => setResendIn((n) => n - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [resendIn]);
+
+  const payload = () => ({
+    mode,
+    listingUrl: mode === "link" ? link : null,
+    address: geo.status === "ok" ? geo.hit.label : address,
+    zoneId,
+    sqm: Number(sqm),
+    condition,
+    floor,
+    lift,
+    extras,
+    energy,
+    timing,
+    low: result?.low ?? null,
+    high: result?.high ?? null,
+    package: packageId ?? null,
+  });
+
+  async function sendOtp(goNext: boolean) {
+    if (!name.trim()) return setContactError("Scrivi il tuo nome.");
+    if (!privacy) return setContactError("Per mandarti il codice serve il consenso privacy.");
+    setBusy(true);
+    setContactError("");
+    try {
+      const res = await fetch("/api/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, privacyConsent: privacy }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setContactError(json.error ?? "Invio non riuscito. Riprova.");
+        if (!goNext) setCodeError(json.error ?? "Invio non riuscito. Riprova.");
+        return;
+      }
+      setSentTo(json.phone);
+      setDemo(Boolean(json.demo));
+      setResendIn(30);
+      setCode("");
+      setCodeError("");
+      if (goNext) next();
+    } catch {
+      setContactError("Sei offline. Controlla la connessione e riprova.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verifyOtp(value: string) {
+    if (value.length !== 6) return setCodeError("Il codice ha 6 cifre.");
+    setBusy(true);
+    setCodeError("");
+    try {
+      const res = await fetch("/api/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: sentTo,
+          code: value,
+          name,
+          need: chosenPackage ? `Pacchetto ${chosenPackage.name}` : "Valutazione",
+          zone: zones.find((z) => z.id === zoneId)?.name,
+          payload: payload(),
+          privacyConsent: privacy,
+          marketingConsent: marketing,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) return setCodeError(json.error ?? "Codice non valido.");
+      next();
+    } catch {
+      setCodeError("Sei offline. Controlla la connessione e riprova.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const next = () => setIndex((i) => Math.min(i + 1, flow.length - 1));
   const back = () => setIndex((i) => Math.max(i - 1, 0));
@@ -99,6 +251,15 @@ export function Funnel({ packageId }: { packageId?: string }) {
     setLink(parsed.url);
     next();
   }
+  function submitAddress() {
+    const v = address.trim();
+    if (v.length < 4) return setAddressError("Scrivi via e numero civico.");
+    if (!/\d/.test(v)) return setAddressError("Aggiungi il numero civico: serve per trovare la casa giusta.");
+    setAddressError("");
+    setGeo({ status: "idle" });
+    queried.current = null;
+    next();
+  }
   function submitSqm() {
     const n = Number(sqm);
     if (!sqm || n < 15 || n > 1000) return setSqmError("Inserisci un numero tra 15 e 1000.");
@@ -109,7 +270,7 @@ export function Funnel({ packageId }: { packageId?: string }) {
   const toggleExtra = (e: Extra) => setExtras((xs) => (xs.includes(e) ? xs.filter((x) => x !== e) : [...xs, e]));
 
   const zone = zones.find((z) => z.id === zoneId);
-  const stepNumber = step === "start" || step === "result" ? null : index;
+  const stepNumber = questions.includes(step) ? questions.indexOf(step) + 1 : null;
 
   return (
     <div className="flow">
@@ -136,7 +297,7 @@ export function Funnel({ packageId }: { packageId?: string }) {
         <div className="q" key={step}>
           {stepNumber !== null && (
             <p className="q-step">
-              Domanda {stepNumber} di {total - 1}
+              Domanda {stepNumber} di {questions.length}
             </p>
           )}
 
@@ -160,7 +321,7 @@ export function Funnel({ packageId }: { packageId?: string }) {
                     <Icon name="link" size={22} />
                   </span>
                   <strong>Ho già un annuncio</strong>
-                  <span>Incolli il link da Immobiliare.it, Idealista o Casa.it. Due domande e hai la stima.</span>
+                  <span>Incolli il link da Immobiliare.it, Idealista o Casa.it, poi indirizzo e metri quadri.</span>
                 </button>
                 <button
                   type="button"
@@ -171,7 +332,7 @@ export function Funnel({ packageId }: { packageId?: string }) {
                     <Icon name="home" size={22} />
                   </span>
                   <strong>Inserisco i dati della casa</strong>
-                  <span>Sette domande veloci, una per schermata. Circa due minuti.</span>
+                  <span>Indirizzo e qualche domanda veloce, una per schermata. Circa due minuti.</span>
                 </button>
               </div>
             </>
@@ -187,7 +348,7 @@ export function Funnel({ packageId }: { packageId?: string }) {
               <h1 ref={titleRef} tabIndex={-1}>
                 Incolla il link del tuo annuncio.
               </h1>
-              <p className="sub">Lo apriamo noi e lo usiamo per la valutazione dettagliata. Per la stima immediata ti chiediamo solo zona e metri quadri.</p>
+              <p className="sub">Lo apriamo noi per la valutazione dettagliata. Per la stima immediata ti chiediamo solo indirizzo e metri quadri.</p>
               <div className="q-body field">
                 <label htmlFor="link">Link dell&apos;annuncio</label>
                 <input
@@ -210,28 +371,117 @@ export function Funnel({ packageId }: { packageId?: string }) {
             </form>
           )}
 
-          {step === "zone" && (
+          {step === "address" && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitAddress();
+              }}
+            >
+              <h1 ref={titleRef} tabIndex={-1}>
+                Dov&apos;è la casa?
+              </h1>
+              <p className="sub">Via e numero civico. Lo usiamo per trovare la zona e i prezzi delle case vicine.</p>
+              <div className="q-body field">
+                <label htmlFor="address">Indirizzo a Milano</label>
+                <div className="address-box">
+                  <span className="address-pin" aria-hidden="true">
+                    <Icon name="pin" size={22} />
+                  </span>
+                  <input
+                    id="address"
+                    className="input input-address"
+                    autoComplete="street-address"
+                    placeholder="Via Giovanni Pacini 11"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    aria-invalid={addressError ? true : undefined}
+                    aria-describedby={addressError ? "address-err" : undefined}
+                  />
+                </div>
+                {addressError && (
+                  <p className="err" id="address-err">
+                    {addressError}
+                  </p>
+                )}
+              </div>
+              <Actions onBack={back} nextLabel="Analizza l'indirizzo" />
+            </form>
+          )}
+
+          {step === "analysis" && (
             <>
               <h1 ref={titleRef} tabIndex={-1}>
-                In che zona si trova?
+                {geo.status === "error" ? "Non troviamo l'indirizzo." : phase >= 3 ? "Ecco cosa abbiamo trovato." : "Stiamo analizzando l'indirizzo…"}
               </h1>
-              <p className="sub">Scegli la zona di Milano più vicina.</p>
-              <div className="q-body zone-grid" role="radiogroup" aria-label="Zona">
-                {zones.map((z) => (
-                  <button
-                    key={z.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={zoneId === z.id}
-                    className="choice"
-                    onClick={() => pickAndNext(() => setZoneId(z.id))}
-                  >
-                    <strong>{z.name}</strong>
-                    <span>{z.areas}</span>
+              {geo.status === "error" ? (
+                <>
+                  <p className="sub">{geo.error}</p>
+                  <div className="q-actions">
+                    <button type="button" className="btn btn-blue" onClick={back}>
+                      Correggi l&apos;indirizzo
+                    </button>
+                    <button type="button" className="btn btn-soft" onClick={() => setChangeZone(true)}>
+                      Scegli la zona a mano
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <ul className="analysis" aria-live="polite">
+                  <AnalysisRow done={phase >= 1} label="Indirizzo" value={geo.status === "ok" ? geo.hit.label : "Cerco l'indirizzo"} />
+                  <AnalysisRow
+                    done={phase >= 2}
+                    label="Zona"
+                    value={phase >= 2 && zone ? `${zone.name}${geo.status === "ok" && geo.hit.quarter ? ` (${geo.hit.quarter})` : ""}` : "Individuo la zona"}
+                  />
+                  <AnalysisRow
+                    done={phase >= 3}
+                    label="Prezzi di zona"
+                    value={phase >= 3 && zone ? `${euro(zone.min)} – ${euro(zone.max)} al m²` : "Recupero i prezzi"}
+                  />
+                </ul>
+              )}
+
+              {(changeZone || geo.status === "error") && (
+                <div className="q-body zone-grid" role="radiogroup" aria-label="Zona" style={{ marginTop: "1.5rem" }}>
+                  {zones.map((z) => (
+                    <button
+                      key={z.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={zoneId === z.id}
+                      className="choice"
+                      onClick={() => {
+                        setZoneId(z.id);
+                        setChangeZone(false);
+                        if (geo.status === "error") next();
+                      }}
+                    >
+                      <strong>{z.name}</strong>
+                      <span>{z.areas}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {geo.status === "ok" && phase >= 3 && !changeZone && (
+                <div className="q-actions">
+                  <button type="button" className="icon-btn" onClick={back} aria-label="Indietro">
+                    <Icon name="back" />
                   </button>
-                ))}
-              </div>
-              <Actions onBack={back} hideNext />
+                  <button type="button" className="btn btn-blue" onClick={next}>
+                    Continua
+                  </button>
+                  <button type="button" className="btn btn-soft" onClick={() => setChangeZone(true)}>
+                    Non è la zona giusta
+                  </button>
+                </div>
+              )}
+              {geo.status === "ok" && phase >= 3 && (
+                <p className="small muted" style={{ marginTop: "1.5rem" }}>
+                  Zona stimata dalla posizione. Indirizzi © OpenStreetMap.
+                </p>
+              )}
             </>
           )}
 
@@ -419,13 +669,151 @@ export function Funnel({ packageId }: { packageId?: string }) {
             </>
           )}
 
+          {step === "contact" && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                sendOtp(true);
+              }}
+            >
+              <h1 ref={titleRef} tabIndex={-1}>
+                La tua valutazione è pronta.
+              </h1>
+              <p className="sub">
+                Dove te la mandiamo? Verifichiamo il cellulare con un codice SMS: così sappiamo che sei tu e un nostro
+                esperto può richiamarti per il report completo, gratis.
+              </p>
+
+              <div className="teaser" aria-hidden="true">
+                <div className="label">Valore di mercato stimato</div>
+                <div className="teaser-value">000–000 mila €</div>
+                <div className="teaser-lock">
+                  <Icon name="lock" size={18} />
+                  Si sblocca dopo la verifica
+                </div>
+              </div>
+
+              <div className="q-body form">
+                <div className="field">
+                  <label htmlFor="c-name">Nome</label>
+                  <input id="c-name" className="input" autoComplete="given-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+                </div>
+                <div className="field">
+                  <label htmlFor="c-phone">Cellulare</label>
+                  <div className="phone-box">
+                    <span className="phone-prefix" aria-hidden="true">
+                      +39
+                    </span>
+                    <input
+                      id="c-phone"
+                      className="input input-phone"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel-national"
+                      placeholder="347 123 4567"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      aria-describedby={contactError ? "c-err" : undefined}
+                    />
+                  </div>
+                </div>
+                <label className="consent full">
+                  <input type="checkbox" checked={privacy} onChange={(e) => setPrivacy(e.target.checked)} />
+                  <span>
+                    Ho letto l&apos;
+                    <Link href="/privacy" target="_blank">
+                      informativa privacy
+                    </Link>{" "}
+                    e voglio ricevere la valutazione ed essere richiamato per questa richiesta.
+                  </span>
+                </label>
+                <label className="consent full">
+                  <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />
+                  <span>Facoltativo: mandatemi consigli e offerte di Ediligo. Posso disiscrivermi quando voglio.</span>
+                </label>
+                {contactError && (
+                  <p className="err full" id="c-err" role="alert">
+                    {contactError}
+                  </p>
+                )}
+              </div>
+              <div className="q-actions">
+                <button type="button" className="icon-btn" onClick={back} aria-label="Indietro">
+                  <Icon name="back" />
+                </button>
+                <button type="submit" className="btn btn-blue btn-lg" disabled={busy}>
+                  {busy ? "Invio in corso" : "Mandami il codice"}
+                </button>
+              </div>
+              <p className="small muted" style={{ marginTop: "1rem" }}>
+                Niente spam e niente agenzie: ti chiamiamo noi una volta, poi decidi tu.
+              </p>
+            </form>
+          )}
+
+          {step === "otp" && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                verifyOtp(code);
+              }}
+            >
+              <h1 ref={titleRef} tabIndex={-1}>
+                Inserisci il codice.
+              </h1>
+              <p className="sub">
+                L&apos;abbiamo mandato via SMS al {fmtPhone(sentTo)}.
+              </p>
+              {demo && (
+                <p className="notice">Modalità prova: gli SMS non sono ancora attivi. Usa il codice 123456.</p>
+              )}
+              <div className="q-body">
+                <label htmlFor="otp" className="small" style={{ fontWeight: 600, display: "block", marginBottom: "0.5rem" }}>
+                  Codice di 6 cifre
+                </label>
+                <input
+                  id="otp"
+                  className="input input-otp"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    setCode(v);
+                    if (v.length === 6) verifyOtp(v);
+                  }}
+                  aria-invalid={codeError ? true : undefined}
+                  aria-describedby={codeError ? "otp-err" : undefined}
+                />
+                {codeError && (
+                  <p className="err" id="otp-err" role="alert">
+                    {codeError}
+                  </p>
+                )}
+              </div>
+              <div className="q-actions">
+                <button type="button" className="icon-btn" onClick={back} aria-label="Cambia numero">
+                  <Icon name="back" />
+                </button>
+                <button type="submit" className="btn btn-blue" disabled={busy || code.length !== 6}>
+                  {busy ? "Verifica in corso" : "Verifica e vedi il valore"}
+                </button>
+                <button type="button" className="btn btn-soft" disabled={resendIn > 0 || busy} onClick={() => sendOtp(false)}>
+                  {resendIn > 0 ? `Invia di nuovo tra ${resendIn}s` : "Invia di nuovo"}
+                </button>
+              </div>
+            </form>
+          )}
+
           {step === "result" && result && (
             <>
               <h1 ref={titleRef} tabIndex={-1}>
                 Ecco quanto vale casa tua.
               </h1>
               <p className="sub">
-                {sqm} m² in zona {zone?.name}. Ti mostriamo anche come ci siamo arrivati.
+                {sqm} m² in {geo.status === "ok" ? geo.hit.label : `zona ${zone?.name}`}. Ti mostriamo anche come ci
+                siamo arrivati.
               </p>
 
               <div className="result-hero">
@@ -470,7 +858,7 @@ export function Funnel({ packageId }: { packageId?: string }) {
 
               {mode === "link" && (
                 <p className="notice" style={{ background: "var(--sky)", color: "var(--sky-ink)" }}>
-                  Stima con zona e metri quadri. Con il tuo annuncio (piano, stato, foto) la affiniamo nel report
+                  Stima con indirizzo e metri quadri. Con il tuo annuncio (piano, stato, foto) la affiniamo nel report
                   completo.
                 </p>
               )}
@@ -481,42 +869,26 @@ export function Funnel({ packageId }: { packageId?: string }) {
                 </p>
               )}
 
-              <div style={{ marginTop: "3rem" }}>
-                <h2 style={{ fontSize: "clamp(1.7rem, 4vw, 2.4rem)" }}>
-                  {chosenPackage ? `Attiviamo il pacchetto ${chosenPackage.name}?` : "Vuoi il report completo, gratis?"}
-                </h2>
-                <p className="sub" style={{ margin: "0.75rem 0 1.5rem" }}>
-                  {chosenPackage
-                    ? "Lasciaci un contatto: ti chiamiamo per partire e ti mandiamo il link per l'acconto."
-                    : "Compravendite recenti nella tua zona, controllo dei documenti e prezzo d'annuncio ragionato. Te lo mandiamo entro un giorno."}
-                </p>
-                <LeadForm
-                  sourcePage="valuta"
-                  need={chosenPackage ? `Pacchetto ${chosenPackage.name}` : "Report completo"}
-                  zone={zone?.name}
-                  submitLabel={chosenPackage ? "Voglio partire" : "Mandami il report"}
-                  payload={{
-                    mode,
-                    listingUrl: mode === "link" ? link : null,
-                    sqm: Number(sqm),
-                    condition,
-                    floor,
-                    lift,
-                    extras,
-                    energy,
-                    timing,
-                    low: result.low,
-                    high: result.high,
-                  }}
-                />
+              <div className="callback">
+                <span className="callback-ico" aria-hidden="true">
+                  <Icon name="phone" size={22} />
+                </span>
+                <div>
+                  <h2>Ti chiamiamo entro un giorno lavorativo.</h2>
+                  <p>
+                    {chosenPackage
+                      ? `Un nostro esperto ti chiama al ${fmtPhone(sentTo)} per attivare il pacchetto ${chosenPackage.name}.`
+                      : `Un nostro esperto ti chiama al ${fmtPhone(sentTo)} con il report completo: compravendite vicine, controllo dei documenti e prezzo d'annuncio ragionato. Gratis.`}
+                  </p>
+                </div>
               </div>
 
               <div className="next-grid">
-                <button type="button" className="btn btn-soft" onClick={() => setIndex(0)}>
-                  Ricomincia
-                </button>
-                <Link href="/#prezzi" className="btn btn-soft">
+                <Link href="/#prezzi" className="btn btn-ink">
                   Guarda i pacchetti
+                </Link>
+                <Link href="/#provvigione" className="btn btn-soft">
+                  Calcola quanto risparmi
                 </Link>
               </div>
             </>
@@ -524,6 +896,22 @@ export function Funnel({ packageId }: { packageId?: string }) {
         </div>
       </main>
     </div>
+  );
+}
+
+const fmtPhone = (p: string) => p.replace(/^\+39(\d{3})(\d{3})(\d+)$/, "+39 $1 $2 $3");
+
+function AnalysisRow({ done, label, value }: { done: boolean; label: string; value: string }) {
+  return (
+    <li className={done ? "done" : undefined}>
+      <span className="analysis-ico" aria-hidden="true">
+        {done ? <Icon name="check" size={16} stroke={3} /> : <span className="spinner" />}
+      </span>
+      <span>
+        <span className="analysis-label">{label}</span>
+        <strong>{value}</strong>
+      </span>
+    </li>
   );
 }
 

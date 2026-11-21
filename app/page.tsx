@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { PhoneHero } from "@/components/PhoneHero";
 import { PhotoCompare } from "@/components/PhotoCompare";
-import { Savings } from "@/components/Savings";
+import { AddressCta, StickyCta } from "@/components/AddressCta";
+import { CommissionCalc } from "@/components/CommissionCalc";
 import { Footer, TopBar } from "@/components/Site";
 import { depositEuro, euro, packages } from "@/lib/site";
 
@@ -50,24 +51,8 @@ export default function Home() {
                 Ti diciamo quanto vale, mettiamo in regola i documenti, scriviamo l&apos;annuncio e filtriamo chi
                 chiama. Tu decidi tutto, e la provvigione resta a te.
               </p>
-              <div className="hero-cta">
-                <Link href="/valuta" className="btn btn-blue btn-lg">
-                  Scopri quanto vale casa tua
-                  <span className="btn-icon">
-                    <Icon name="arrow" size={16} />
-                  </span>
-                </Link>
-                <Link href="#servizi" className="btn btn-soft btn-lg">
-                  Come funziona
-                </Link>
-              </div>
+              <AddressCta id="hero-address" />
               <ul className="hero-proof">
-                <li>
-                  <span className="tick">
-                    <Icon name="check" size={13} stroke={3} />
-                  </span>
-                  Gratis, in 2 minuti
-                </li>
                 <li>
                   <span className="tick">
                     <Icon name="check" size={13} stroke={3} />
@@ -78,7 +63,13 @@ export default function Home() {
                   <span className="tick">
                     <Icon name="check" size={13} stroke={3} />
                   </span>
-                  Nessuna registrazione
+                  Nessuna agenzia
+                </li>
+                <li>
+                  <span className="tick">
+                    <Icon name="check" size={13} stroke={3} />
+                  </span>
+                  Professionisti di Milano
                 </li>
               </ul>
             </div>
@@ -224,10 +215,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Risparmio */}
-        <section className="section section-tight" aria-label="Quanto risparmi">
+        {/* Calcolo della provvigione */}
+        <section className="section section-tight" aria-label="Calcolo della provvigione">
           <div className="wrap">
-            <Savings />
+            <CommissionCalc />
           </div>
         </section>
 
@@ -317,15 +308,16 @@ export default function Home() {
           <div className="wrap">
             <div className="closing">
               <h2>Quanto vale casa tua? Scoprilo in 2 minuti.</h2>
-              <p className="sub">Gratis, senza registrazione, con i dati della tua zona.</p>
-              <Link href="/valuta" className="btn btn-white btn-lg">
-                Scopri quanto vale casa tua
-              </Link>
+              <p className="sub">Scrivi l&apos;indirizzo: zona, prezzi e valore li calcoliamo noi.</p>
+              <div className="closing-form">
+                <AddressCta id="closing-address" dark />
+              </div>
             </div>
           </div>
         </section>
       </main>
       <Footer />
+      <StickyCta />
     </>
   );
 }
