@@ -35,6 +35,7 @@ type GeoHit = {
   postcode: string | null;
   lat: number;
   lng: number;
+  omiZone: string | null;
 };
 type Geo =
   | { status: "idle" }
@@ -91,6 +92,7 @@ export function Funnel({
   const [geo, setGeo] = useState<Geo>({ status: "idle" });
   const [phase, setPhase] = useState(0);
   const [changeZone, setChangeZone] = useState(false);
+  const [zoneOfficial, setZoneOfficial] = useState(false);
   const [sqm, setSqm] = useState("");
   const [sqmError, setSqmError] = useState("");
   const [condition, setCondition] = useState<Condition>("buono");
@@ -142,7 +144,11 @@ export function Funnel({
         }
         const hit = json as GeoHit;
         setGeo({ status: "ok", hit });
-        setZoneId(zoneForPoint(hit.lat, hit.lng)?.id ?? "");
+        // Zona ufficiale dai confini OMI; se l'indirizzo cade in una zona senza quotazioni residenziali
+        // (es. R2, agricola) usiamo la zona residenziale più vicina.
+        const official = hit.omiZone && zones.some((z) => z.id === hit.omiZone) ? hit.omiZone : null;
+        setZoneId(official ?? zoneForPoint(hit.lat, hit.lng)?.id ?? "");
+        setZoneOfficial(Boolean(official));
         [1, 2, 3].forEach((n) => timers.push(window.setTimeout(() => setPhase(n), n * 550)));
       })
       .catch(() => {
@@ -497,7 +503,10 @@ export function Funnel({
               )}
               {geo.status === "ok" && phase >= 3 && (
                 <p className="small muted" style={{ marginTop: "1.5rem" }}>
-                  Zona stimata dalla posizione. Indirizzi © OpenStreetMap.
+                  {zoneOfficial
+                    ? "Zona OMI ufficiale, dai confini dell'Agenzia delle Entrate (Comune di Milano, CC BY 4.0)."
+                    : "Zona stimata dalla posizione: controlla che sia giusta."}{" "}
+                  Indirizzi © OpenStreetMap.
                 </p>
               )}
             </>
@@ -893,7 +902,7 @@ export function Funnel({
               {!zoneSource.isSample && (
                 <p className="small muted" style={{ marginTop: "0.75rem" }}>
                   Fonte: quotazioni OMI dell&apos;Agenzia delle Entrate, {zoneSource.label.replace("Dati OMI ", "semestre ")}, abitazioni
-                  civili. Zona assegnata in base alla posizione dell&apos;indirizzo: è una stima, non una perizia.
+                  civili. Confini delle zone: Comune di Milano, CC BY 4.0. È una stima, non una perizia.
                 </p>
               )}
               {zoneSource.isSample && (

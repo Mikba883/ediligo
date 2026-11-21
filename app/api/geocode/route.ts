@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { omiZoneAt } from "@/lib/zone-confini";
 
 // Ricerca di un indirizzo nel Comune di Milano con OpenStreetMap (Nominatim).
 // Regole d'uso di Nominatim: al massimo 1 richiesta al secondo, niente autocompletamento,
@@ -13,6 +14,7 @@ type Hit = {
   postcode: string | null;
   lat: number;
   lng: number;
+  omiZone: string | null; // zona OMI ufficiale che contiene l'indirizzo
 };
 
 const cache = new Map<string, Hit | null>();
@@ -87,6 +89,7 @@ export async function GET(req: Request) {
           postcode: a.postcode ?? null,
           lat: Number(first.lat),
           lng: Number(first.lon),
+          omiZone: omiZoneAt(Number(first.lat), Number(first.lon)),
         }
       : null;
 

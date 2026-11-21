@@ -34,7 +34,7 @@ npm run build-omi -- data/omi-raw/OMI_Milano_2004-2026.csv
 Come funziona la stima:
 - lo **stato della casa** sceglie la fascia OMI: buono = normale, nuova = ottimo, ristrutturata = a metà, da ristrutturare = metà bassa della normale;
 - piano, ascensore, extra e classe energetica aggiungono correttivi dichiarati (`lib/valuation.ts`), da tarare sulle compravendite reali;
-- l'**indirizzo** viene assegnato alla zona OMI con il centro più vicino (`data/omi-zone-coords.json`, calcolato con `npm run geocode-zones` e 4 zone corrette a mano). È un'approssimazione: con i confini ufficiali delle zone (file KML dell'Agenzia delle Entrate) l'assegnazione diventa esatta.
+- l'**indirizzo** viene assegnato alla zona OMI che lo contiene, usando i confini ufficiali (`data/zone-milano-confini.json`, perimetri OMI 2025/2 ripubblicati dal Comune di Milano, CC BY 4.0; originali in `data/omi-raw/`). Se l'indirizzo cade in una zona senza quotazioni residenziali (R2, agricola) si usa la zona più vicina (`data/omi-zone-coords.json`).
 
 `data/omi-raw/OMI_capoluoghi_2026-1.csv` contiene il semestre 2026/1 di tutti i capoluoghi italiani, utile per allargare il servizio ad altre città.
 
