@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { agencyRate, euro, packages, vatRate } from "@/lib/site";
 
@@ -9,18 +10,20 @@ export function Savings() {
   const ediligo = packages.find((p) => p.id === "completo")!.price;
 
   return (
-    <div className="savings">
+    <div className="savings-card">
       <div>
-        <h3>Quanto risparmi rispetto a un&apos;agenzia</h3>
-        <p className="muted" style={{ marginTop: "0.5rem" }}>
-          Calcolo con una provvigione del 3% più IVA a carico di chi vende, frequente a Milano. Le agenzie possono
-          chiedere di più o di meno: verifica sempre l&apos;incarico.
+        <h2>La provvigione resta a te.</h2>
+        <p className="sub">
+          Con un&apos;agenzia al 3% più IVA, una casa da {euro(price)} ti costa {euro(agency)}. Con Ediligo paghi un
+          prezzo fisso.
         </p>
-        <label htmlFor="price" className="small" style={{ display: "block", marginTop: "1.5rem", fontWeight: 600 }}>
-          Prezzo di vendita: {euro(price)}
-        </label>
+        <div className="slider-label">
+          <label htmlFor="price">Prezzo della tua casa</label>
+          <strong>{euro(price)}</strong>
+        </div>
         <input
           id="price"
+          className="slider"
           type="range"
           min={150000}
           max={1200000}
@@ -29,25 +32,25 @@ export function Savings() {
           onChange={(e) => setPrice(Number(e.target.value))}
         />
       </div>
-      <table className="savings-table">
-        <caption className="small muted" style={{ textAlign: "left", paddingBottom: "0.5rem" }}>
-          Costi per chi vende una casa da {euro(price)}
-        </caption>
-        <tbody>
-          <tr>
-            <td>Agenzia, 3% più IVA</td>
-            <td>{euro(agency)}</td>
-          </tr>
-          <tr>
-            <td>Ediligo, pacchetto Completo</td>
-            <td>{euro(ediligo)}</td>
-          </tr>
-          <tr className="total">
-            <td>Ti restano in tasca</td>
-            <td>{euro(agency - ediligo)}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div>
+        <p style={{ color: "#b8c2d3" }}>Risparmi</p>
+        <p className="big-number" aria-live="polite">
+          {euro(agency - ediligo)}
+        </p>
+        <div className="compare-lines">
+          <div>
+            <span>Agenzia, 3% più IVA</span>
+            <span>{euro(agency)}</span>
+          </div>
+          <div>
+            <span>Ediligo Completo</span>
+            <span>{euro(ediligo)}</span>
+          </div>
+        </div>
+        <Link href="/valuta" className="btn btn-white" style={{ marginTop: "1.5rem" }}>
+          Scopri quanto vale casa tua
+        </Link>
+      </div>
     </div>
   );
 }

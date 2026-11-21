@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Footer, Header } from "@/components/Chrome";
+import { Footer, TopBar } from "@/components/Site";
 
 export const metadata: Metadata = { title: "Informativa privacy — Ediligo", robots: { index: false } };
 
 export default function PrivacyPage() {
   return (
     <>
-      <Header />
+      <TopBar />
       <main id="contenuto" className="section" style={{ paddingTop: "3rem" }}>
-        <div className="wrap prose">
-          <h1>Informativa privacy</h1>
-          <p className="sample-flag" style={{ margin: "1.5rem 0" }}>
+        <div className="wrap"><div className="prose">
+          <h1 style={{ fontSize: "clamp(2.4rem, 6vw, 4rem)" }}>Informativa privacy</h1>
+          <p className="notice" style={{ margin: "1.5rem 0" }}>
             Bozza da far verificare a un legale prima della pubblicazione. Mancano i dati del titolare.
           </p>
 
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
             Puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità e opporti al trattamento scrivendo a
             [email]. Puoi anche presentare reclamo al Garante per la protezione dei dati personali.
           </p>
-        </div>
+        </div></div>
       </main>
       <Footer />
     </>

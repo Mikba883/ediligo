@@ -6,11 +6,12 @@ Servizi per chi vende casa da privato a Milano: quotazione con dati OMI, control
 
 | Percorso | Contenuto |
 |---|---|
-| `/` | Landing page: apertura con quotazione rapida e "fascicolo" di esempio, problemi, come funziona, prezzi con calcolo del risparmio, network, domande, modulo contatti |
-| `/quotazione` | Prototipo di quotazione: stima con fasce di zona e correttivi spiegati voce per voce |
-| `/brand` | Studio grafico (logo, colori, caratteri, semaforo dei documenti) |
+| `/` | Landing page: "Vendi casa da privato. Senza stress.", telefono con l'app, griglia dei servizi, calcolo del risparmio, tre passi, prezzi, domande |
+| `/valuta` | "Scopri quanto vale casa tua": percorso a domande, una per schermata, partendo dal link dell'annuncio o dai dati della casa. Risultato immediato e richiesta del report completo |
+| `/brand` | Studio grafico v2 (logo, colori, tinte dei servizi, caratteri) |
 | `/privacy` | Bozza di informativa, da validare con un legale |
-| `docs/studio-grafico.md` | Studio completo, con benchmark dei concorrenti diretti e indiretti (`docs/benchmark/`) |
+| `docs/studio-cliente.md` | Studio v2 dal punto di vista del cliente: paure, messaggio, direzione visiva, percorso |
+| `docs/studio-grafico.md` | Studio v1 (superato) con il benchmark dei concorrenti diretti e indiretti (`docs/benchmark/`) |
 | `docs/anteprima/` | Screenshot delle pagine |
 
 ## Avvio

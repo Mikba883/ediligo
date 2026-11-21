@@ -1,4 +1,6 @@
-# Ediligo — Studio grafico e di marca
+# Ediligo — Studio grafico v1 (superato)
+
+> Questa è la prima versione ("il fascicolo della casa"). È stata sostituita dalla v2 in `docs/studio-cliente.md`: la teniamo per il benchmark dei concorrenti, che resta valido.
 
 Versione 1 · novembre 2026 · base per landing page e prototipo di quotazione
 

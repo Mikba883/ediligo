@@ -1,278 +1,306 @@
 import Link from "next/link";
-import { Footer, Header } from "@/components/Chrome";
-import { LeadForm } from "@/components/LeadForm";
-import { Planimetria } from "@/components/Planimetria";
-import { QuickQuote } from "@/components/QuickQuote";
+import { Icon } from "@/components/Icon";
+import { PhoneHero } from "@/components/PhoneHero";
+import { PhotoCompare } from "@/components/PhotoCompare";
 import { Savings } from "@/components/Savings";
+import { Footer, TopBar } from "@/components/Site";
 import { depositEuro, euro, packages } from "@/lib/site";
-import { estimate } from "@/lib/valuation";
-
-const fixes = [
-  {
-    title: "Il prezzo",
-    fear: "Chiedi troppo e la casa resta ferma. Chiedi poco e regali soldi a chi compra.",
-    answer:
-      "Partiamo dalle quotazioni OMI della tua zona e dalle caratteristiche della casa. Ti diciamo un intervallo realistico e da quale prezzo far partire l'annuncio per lasciare margine alla trattativa.",
-  },
-  {
-    title: "I documenti",
-    fear: "Una veranda chiusa o una planimetria vecchia possono bloccare il rogito, o arrivare dopo come causa.",
-    answer:
-      "Carichi visura, planimetria e APE: l'AI ti dice cosa manca e cosa non torna. Se serve, un geometra del network va in Comune, controlla i titoli edilizi e ti scrive cosa sistemare.",
-  },
-  {
-    title: "L'annuncio",
-    fear: "Foto scure, descrizione di due righe, niente planimetria: chi cerca casa scorre oltre.",
-    answer:
-      "Scriviamo l'annuncio per Immobiliare.it, Idealista e Casa.it, miglioriamo le foto e, se vuoi, aggiungiamo un arredamento virtuale dichiarato. Lo pubblichi tu, dal tuo account da privato.",
-  },
-  {
-    title: "Il tempo",
-    fear: "Telefonate a tutte le ore, visite di curiosi, proposte scritte su un foglio.",
-    answer:
-      "Ti diamo una scaletta per filtrare chi chiama, organizzare le visite e capire chi ha già un mutuo. Per la proposta d'acquisto ti mettiamo in contatto con un avvocato a prezzo fisso.",
-  },
-];
-
-const steps = [
-  {
-    title: "Calcoli il valore",
-    text: "Zona, metri quadri, stato della casa. In due minuti hai una stima con i dati OMI.",
-    who: "Gratis, con l'AI",
-  },
-  {
-    title: "Controlli i documenti",
-    text: "Carichi le carte che hai. Ricevi una lista verde, gialla e rossa di cosa sistemare.",
-    who: "Gratis, con l'AI",
-  },
-  {
-    title: "Sistemi quello che serve",
-    text: "APE, verifica di conformità, piccole sanatorie: le fa un professionista del network.",
-    who: "Prezzo fisso, deciso prima",
-  },
-  {
-    title: "Pubblichi l'annuncio",
-    text: "Testo e foto pronti. Lo carichi sui portali come privato, con la nostra guida.",
-    who: "Tu, dal tuo account",
-  },
-  {
-    title: "Vendi",
-    text: "Visite, trattativa e proposta restano in mano tua. Noi ti diamo strumenti e professionisti.",
-    who: "Decidi sempre tu",
-  },
-];
-
-const roles = [
-  { title: "Geometri e architetti", text: "Accesso agli atti in Comune, verifica di conformità, pratiche di sanatoria." },
-  { title: "Certificatori energetici", text: "APE con sopralluogo vero, non compilato a distanza." },
-  { title: "Avvocati", text: "Revisione della proposta d'acquisto e del preliminare, a tariffa fissa." },
-  { title: "Fotografi", text: "Per chi vuole foto professionali oltre a quelle migliorate con l'AI." },
-];
 
 const faqs = [
   {
-    q: "Ediligo è un'agenzia immobiliare?",
-    a: "No. Non cerchiamo acquirenti per te, non trattiamo il prezzo al posto tuo e non prendiamo percentuali sulla vendita. Ti vendiamo servizi a prezzo fisso: quotazione, documenti, annuncio, professionisti.",
+    q: "Ediligo è un'agenzia?",
+    a: "No. Non cerchiamo acquirenti al posto tuo, non trattiamo il prezzo e non prendiamo percentuali. Ti diamo un'app e dei professionisti, a prezzo fisso. La vendita resta tua.",
   },
   {
-    q: "Chi paga Ediligo?",
-    a: "Solo tu che vendi, e solo il prezzo del pacchetto che scegli. Chi compra casa non ci paga nulla.",
+    q: "Chi paga?",
+    a: "Solo tu, e solo il pacchetto che scegli. Chi compra casa non paga niente a Ediligo.",
   },
   {
-    q: "La quotazione è una perizia?",
-    a: "No, è una stima basata sulle quotazioni OMI della zona e sulle caratteristiche che ci indichi. Serve a scegliere il prezzo dell'annuncio. Una perizia la firma un tecnico abilitato e possiamo organizzarla tramite il network.",
+    q: "La valutazione è affidabile?",
+    a: "Partiamo dalle quotazioni OMI dell'Agenzia delle Entrate per la tua zona e le correggiamo con le caratteristiche della casa. Ti mostriamo ogni passaggio. È una stima, non una perizia: se ti serve una perizia firmata, la fa un tecnico del network.",
   },
   {
-    q: "Mi serve davvero l'APE?",
-    a: "Sì. L'attestato di prestazione energetica va indicato nell'annuncio e consegnato a chi compra. Se il tuo è scaduto o manca, lo fa un certificatore del network con sopralluogo.",
+    q: "E se i documenti non sono in regola?",
+    a: "Meglio saperlo adesso che davanti al notaio. Il geometra ti spiega cosa non torna e quanto costa sistemarlo, con un preventivo scritto. Decidi tu.",
   },
   {
-    q: "Le foto con l'AI sono legali?",
-    a: "Miglioriamo luce, colori e prospettiva. L'arredamento virtuale è sempre dichiarato nell'annuncio. Non togliamo difetti e non cambiamo le dimensioni delle stanze: chi visita deve trovare la casa delle foto.",
+    q: "Le foto con l'AI non ingannano chi compra?",
+    a: "Miglioriamo luce, colori e prospettiva. L'arredo virtuale è sempre dichiarato nell'annuncio. Non nascondiamo difetti e non cambiamo le misure: chi visita trova la casa delle foto.",
   },
   {
-    q: "Cosa succede se dopo la verifica la casa non è in regola?",
-    a: "Il geometra ti spiega cosa non torna e quanto costa sistemarlo, con un preventivo scritto. Decidi tu se procedere. Meglio saperlo prima delle visite che davanti al notaio.",
+    q: "Devo dare a qualcuno le chiavi di casa?",
+    a: "No. Le visite le fai tu, quando vuoi tu. La segretaria AI ti manda solo persone già filtrate e prenota negli orari che hai scelto.",
   },
 ];
 
 export default function Home() {
-  const example = estimate({
-    zoneId: "citta-studi",
-    sqm: 72,
-    condition: "buono",
-    floor: 2,
-    lift: true,
-    outdoor: "balcone",
-    garage: false,
-    energy: "non-so",
-  });
   return (
     <>
-      <Header />
+      <TopBar />
       <main id="contenuto">
+        {/* Apertura */}
         <section className="hero">
           <div className="wrap hero-grid">
             <div>
               <h1>
-                <span className="h1-line">Vendi casa da privato.</span>{" "}
-                <span className="h1-line">Al fascicolo pensiamo noi.</span>
+                Vendi casa da privato.
+                <span className="soft">Senza stress.</span>
               </h1>
-              <p className="lead">
-                Prezzo giusto, documenti verificati, annuncio e foto pronti. L&apos;AI fa il lavoro lungo, i
-                professionisti di Milano mettono la firma. La trattativa resta tua, e anche i soldi della provvigione.
+              <p className="sub">
+                Ti diciamo quanto vale, mettiamo in regola i documenti, scriviamo l&apos;annuncio e filtriamo chi
+                chiama. Tu decidi tutto, e la provvigione resta a te.
               </p>
-              <QuickQuote />
-              <p className="small muted" style={{ marginTop: "1.25rem" }}>
-                Non siamo un&apos;agenzia: paghi un prezzo fisso, solo se scegli un pacchetto, e tratti tu con chi compra.
-              </p>
-            </div>
-
-            <figure className="dossier" style={{ margin: 0 }}>
-              <div className="dossier-head">
-                <strong>Fascicolo della casa</strong>
-                <span className="small muted">Esempio</span>
+              <div className="hero-cta">
+                <Link href="/valuta" className="btn btn-blue btn-lg">
+                  Scopri quanto vale casa tua
+                  <span className="btn-icon">
+                    <Icon name="arrow" size={16} />
+                  </span>
+                </Link>
+                <Link href="#servizi" className="btn btn-soft btn-lg">
+                  Come funziona
+                </Link>
               </div>
-              <div className="dossier-plan">
-                <Planimetria />
-              </div>
-              <div className="dossier-estimate">
-                <span className="small">Valore stimato</span>
-                <span className="value">
-                  {example ? `${euro(example.low)} – ${euro(example.high)}` : "—"}
-                </span>
-              </div>
-              <ul className="status-list">
+              <ul className="hero-proof">
                 <li>
-                  <span>Prezzo d&apos;annuncio</span>
-                  <span className="status status-ok">Calcolato</span>
+                  <span className="tick">
+                    <Icon name="check" size={13} stroke={3} />
+                  </span>
+                  Gratis, in 2 minuti
                 </li>
                 <li>
-                  <span>Planimetria catastale</span>
-                  <span className="status status-ok">Allineata</span>
+                  <span className="tick">
+                    <Icon name="check" size={13} stroke={3} />
+                  </span>
+                  Dati OMI della tua zona
                 </li>
                 <li>
-                  <span>APE</span>
-                  <span className="status status-warn">Scaduto, da rifare</span>
-                </li>
-                <li>
-                  <span>Veranda chiusa sul balcone</span>
-                  <span className="status status-bad">Da verificare in Comune</span>
+                  <span className="tick">
+                    <Icon name="check" size={13} stroke={3} />
+                  </span>
+                  Nessuna registrazione
                 </li>
               </ul>
-              <figcaption className="small muted" style={{ padding: "0 1.25rem 1rem" }}>
-                Trilocale di 72 m² con balcone in Città Studi, in buono stato. Valori di esempio.
-              </figcaption>
-            </figure>
+            </div>
+            <PhoneHero />
           </div>
         </section>
 
-        <section className="section section-alt" aria-labelledby="problemi">
+        {/* Servizi */}
+        <section className="section section-tight" id="servizi" aria-labelledby="servizi-title">
           <div className="wrap">
-            <div className="section-head">
-              <h2 id="problemi">Quattro cose fermano chi vende da solo</h2>
-              <p className="lead">
-                Non è l&apos;agenzia che manca: mancano dati, carte in ordine e un po&apos; di metodo. Ecco cosa
-                facciamo per ognuna.
+            <div className="head">
+              <h2 id="servizi-title">Tutto quello che fa un&apos;agenzia. Tranne la provvigione.</h2>
+              <p className="sub">
+                L&apos;AI fa il lavoro lungo, i professionisti di Milano mettono la firma dove serve. Tu tieni il
+                controllo dal telefono.
               </p>
             </div>
-            <ul className="fixes">
-              {fixes.map((f) => (
-                <li key={f.title}>
-                  <div>
-                    <h3>{f.title}</h3>
-                    <p className="fear">{f.fear}</p>
+
+            <div className="bento">
+              <article className="tile t-mint span-4">
+                <h3>Sai subito quanto vale</h3>
+                <p>
+                  Quotazioni OMI della tua zona, corrette per piano, stato, balcone e classe energetica. E il prezzo
+                  giusto da cui far partire l&apos;annuncio.
+                </p>
+                <div className="viz">
+                  <div className="mini" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "1rem", alignItems: "end" }}>
+                    <div className="bars" aria-hidden="true">
+                      {[38, 52, 61, 70, 84, 92, 78, 64, 50].map((h, i) => (
+                        <span key={i} className={i === 5 ? "me" : undefined} style={{ height: `${h}%` }} />
+                      ))}
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div className="muted small">Casa tua</div>
+                      <div className="display" style={{ fontSize: "1.8rem" }}>
+                        5.490 €/m²
+                      </div>
+                      <div className="small" style={{ color: "var(--mint-ink)", fontWeight: 600 }}>
+                        Sopra la media di zona
+                      </div>
+                    </div>
                   </div>
-                  <p>{f.answer}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        <section className="section section-dark" id="come-funziona" aria-labelledby="come">
-          <div className="wrap">
-            <div className="section-head">
-              <h2 id="come">Come funziona</h2>
-              <p className="lead muted">
-                Cinque passi, nell&apos;ordine in cui li affronti. I primi due sono gratis e ti dicono già se puoi
-                vendere senza sorprese.
-              </p>
-            </div>
-            <ol className="steps">
-              {steps.map((s) => (
-                <li key={s.title}>
-                  <h3>{s.title}</h3>
-                  <p className="muted">{s.text}</p>
-                  <span className="who">{s.who}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        <section className="section" id="prezzi" aria-labelledby="prezzi-title">
-          <div className="wrap">
-            <div className="section-head">
-              <h2 id="prezzi-title">Prezzi fissi, decisi prima</h2>
-              <p className="lead">
-                Nessuna percentuale sulla vendita, nessun costo per chi compra. Per prenotare un pacchetto basta un
-                acconto di {euro(depositEuro)}, rimborsabile.
-              </p>
-            </div>
-            <div className="pricing">
-              {packages.map((p) => (
-                <div key={p.id} className={`plan-col${p.id === "completo" ? " featured" : ""}`}>
-                  <h3>{p.name}</h3>
-                  <p className="price">{p.price === 0 ? "Gratis" : euro(p.price)}</p>
-                  <p className="muted small">{p.summary}</p>
-                  <ul>
-                    {p.includes.map((i) => (
-                      <li key={i}>{i}</li>
-                    ))}
-                  </ul>
-                  {p.id === "gratis" ? (
-                    <Link href="/quotazione" className="btn btn-ghost">
-                      {p.cta}
-                    </Link>
-                  ) : (
-                    <Link href="#contatti" className={`btn ${p.id === "completo" ? "btn-primary" : "btn-ghost"}`}>
-                      {p.cta}
-                    </Link>
-                  )}
                 </div>
-              ))}
+              </article>
+
+              <article className="tile t-lilac span-2">
+                <h3>Documenti in regola, prima delle visite</h3>
+                <p>Carichi visura, planimetria e APE. Ti diciamo cosa manca. Se serve, un geometra va in Comune.</p>
+                <div className="viz">
+                  <div className="mini">
+                    <div className="mini-row">
+                      <span>Planimetria</span>
+                      <span className="dot dot-ok">Ok</span>
+                    </div>
+                    <div className="mini-row">
+                      <span>APE</span>
+                      <span className="dot dot-warn">Scaduto</span>
+                    </div>
+                    <div className="mini-row">
+                      <span>Veranda</span>
+                      <span className="dot dot-bad">Da sanare</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article className="tile t-peach span-3">
+                <h3>Un annuncio che si fa leggere</h3>
+                <p>Scritto dall&apos;AI per Immobiliare.it, Idealista e Casa.it, con le parole che chi cerca casa usa davvero.</p>
+                <div className="viz">
+                  <div className="mini typing">
+                    Trilocale <mark>luminoso</mark> a due passi dalla <mark>M2 Piola</mark>, secondo piano con
+                    ascensore, balcone su cortile <mark>silenzioso</mark>. Cucina abitabile, due camere, cantina
+                    <span className="caret" aria-hidden="true" />
+                  </div>
+                </div>
+              </article>
+
+              <article className="tile t-sky span-3">
+                <h3>Foto che fanno venire voglia di visitare</h3>
+                <p>Luce, colori e arredo virtuale con l&apos;AI. Sempre dichiarato, mai un difetto nascosto. Prova tu.</p>
+                <div className="viz">
+                  <PhotoCompare />
+                </div>
+              </article>
+
+              <article className="tile t-butter span-2">
+                <span className="tag">In arrivo</span>
+                <h3>Una segretaria che filtra i perditempo</h3>
+                <p>Risponde su WhatsApp, chiede budget e mutuo, ti passa solo chi è serio.</p>
+                <div className="viz">
+                  <div className="chat">
+                    <span className="bubble in">Ciao, la casa è ancora disponibile?</span>
+                    <span className="bubble out">Sì! Ha già un mutuo approvato?</span>
+                    <span className="bubble in">Sì, fino a 420 mila</span>
+                  </div>
+                </div>
+              </article>
+
+              <article className="tile t-rose span-2">
+                <span className="tag">In arrivo</span>
+                <h3>Visite solo quando vuoi tu</h3>
+                <p>Scegli gli orari, l&apos;agenda si riempie da sola con chi ha superato il filtro.</p>
+                <div className="viz">
+                  <div className="slots" aria-hidden="true">
+                    <span className="head-day">Gio</span>
+                    <span className="head-day">Ven</span>
+                    <span className="head-day">Sab</span>
+                    <span className="head-day">Dom</span>
+                    <span>18:00</span>
+                    <span className="busy">18:30</span>
+                    <span className="busy">10:30</span>
+                    <span>11:00</span>
+                    <span className="busy">18:30</span>
+                    <span>19:00</span>
+                    <span className="busy">11:30</span>
+                    <span>—</span>
+                  </div>
+                </div>
+              </article>
+
+              <article className="tile t-ink span-2">
+                <h3>Professionisti veri, a prezzo fisso</h3>
+                <p>Geometra, certificatore APE e avvocato per la proposta d&apos;acquisto. Il prezzo lo sai prima.</p>
+                <div className="viz">
+                  <div className="people">
+                    <span className="person">
+                      <span className="avatar" style={{ background: "var(--blue)" }}>G</span>
+                      Geometra
+                    </span>
+                    <span className="person">
+                      <span className="avatar" style={{ background: "var(--mint-ink)" }}>A</span>
+                      Certificatore APE
+                    </span>
+                    <span className="person">
+                      <span className="avatar" style={{ background: "var(--rose-ink)" }}>L</span>
+                      Avvocato
+                    </span>
+                  </div>
+                </div>
+              </article>
             </div>
-            <p className="small muted" style={{ marginTop: "1rem" }}>
-              Prezzi IVA inclusa. Sanatorie e pratiche extra hanno un preventivo a parte, sempre a prezzo fisso.
-            </p>
+          </div>
+        </section>
+
+        {/* Risparmio */}
+        <section className="section section-tight" aria-label="Quanto risparmi">
+          <div className="wrap">
             <Savings />
           </div>
         </section>
 
-        <section className="section section-alt" aria-labelledby="network">
+        {/* Come funziona */}
+        <section className="section section-tight" aria-labelledby="come-title">
           <div className="wrap">
-            <div className="section-head">
-              <h2 id="network">Professionisti di Milano, a tariffa concordata</h2>
-              <p className="lead">
-                Dove serve una firma lavora un professionista abilitato. Il prezzo lo conosci prima, e ti fattura
-                direttamente o è già incluso nel pacchetto.
-              </p>
+            <div className="head">
+              <h2 id="come-title">Da oggi al rogito, in tre mosse.</h2>
             </div>
-            <ul className="roles">
-              {roles.map((r) => (
-                <li key={r.title}>
-                  <h3>{r.title}</h3>
-                  <p className="muted">{r.text}</p>
-                </li>
-              ))}
-            </ul>
+            <ol className="steps3">
+              <li>
+                <h3>Scopri quanto vale</h3>
+                <p>Rispondi a qualche domanda o incolla il link del tuo annuncio. Il valore lo vedi subito.</p>
+              </li>
+              <li>
+                <h3>Prepariamo tutto</h3>
+                <p>Documenti controllati, APE, annuncio e foto. Lo pubblichi tu dal tuo account, come privato.</p>
+              </li>
+              <li>
+                <h3>Vendi alle tue condizioni</h3>
+                <p>Visite filtrate, proposta preparata, avvocato se serve. Tu firmi, e tieni la provvigione.</p>
+              </li>
+            </ol>
           </div>
         </section>
 
-        <section className="section" id="domande" aria-labelledby="faq-title">
-          <div className="wrap section-head" style={{ alignItems: "start" }}>
-            <h2 id="faq-title">Domande frequenti</h2>
+        {/* Prezzi */}
+        <section className="section section-tight" id="prezzi" aria-labelledby="prezzi-title">
+          <div className="wrap">
+            <div className="head">
+              <h2 id="prezzi-title">Un prezzo fisso. Niente percentuali.</h2>
+              <p className="sub">
+                Prenoti con un acconto di {euro(depositEuro)}, rimborsabile. Paghi il resto solo quando partiamo.
+              </p>
+            </div>
+            <div className="prices">
+              {packages.map((p) => (
+                <div key={p.id} className={`price-card${p.id === "completo" ? " hot" : ""}`}>
+                  {p.id === "completo" && <span className="pill">Consigliato</span>}
+                  <h3>{p.name}</h3>
+                  <div className="amount">{p.price === 0 ? "Gratis" : euro(p.price)}</div>
+                  <p style={{ opacity: 0.85 }}>{p.summary}</p>
+                  <ul>
+                    {p.includes.map((i) => (
+                      <li key={i}>
+                        <span className="tick">
+                          <Icon name="check" size={13} stroke={3} />
+                        </span>
+                        {i}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href={p.id === "gratis" ? "/valuta" : `/valuta?pacchetto=${p.id}`}
+                    className={`btn ${p.id === "completo" ? "btn-white" : "btn-ink"}`}
+                  >
+                    {p.id === "gratis" ? "Valuta casa gratis" : `Inizia con ${p.name}`}
+                  </Link>
+                </div>
+              ))}
+            </div>
+            <p className="small muted" style={{ marginTop: "1rem" }}>
+              Prezzi IVA inclusa. Eventuali sanatorie hanno un preventivo a parte, sempre a prezzo fisso.
+            </p>
+          </div>
+        </section>
+
+        {/* Domande */}
+        <section className="section section-tight" id="domande" aria-labelledby="faq-title">
+          <div className="wrap faq-grid">
+            <div>
+              <h2 id="faq-title">Le domande che ci fanno tutti.</h2>
+            </div>
             <div className="faq">
               {faqs.map((f) => (
                 <details key={f.q}>
@@ -284,15 +312,16 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section section-alt" id="contatti" aria-labelledby="contatti-title">
-          <div className="wrap section-head" style={{ alignItems: "start" }}>
-            <div>
-              <h2 id="contatti-title">Parliamo della tua casa</h2>
-              <p className="lead" style={{ marginTop: "1rem" }}>
-                Lasciaci un contatto: ti richiamiamo entro un giorno lavorativo, senza impegno.
-              </p>
+        {/* Chiusura */}
+        <section className="section section-tight">
+          <div className="wrap">
+            <div className="closing">
+              <h2>Quanto vale casa tua? Scoprilo in 2 minuti.</h2>
+              <p className="sub">Gratis, senza registrazione, con i dati della tua zona.</p>
+              <Link href="/valuta" className="btn btn-white btn-lg">
+                Scopri quanto vale casa tua
+              </Link>
             </div>
-            <LeadForm sourcePage="home" />
           </div>
         </section>
       </main>

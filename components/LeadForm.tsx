@@ -2,24 +2,17 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { packages, whatsappHref } from "@/lib/site";
+import { whatsappHref } from "@/lib/site";
 
 type Props = {
-  defaultNeed?: string;
-  valuation?: unknown;
+  need: string;
+  payload?: Record<string, unknown>;
   zone?: string;
   sourcePage: string;
+  submitLabel?: string;
 };
 
-const needs = [
-  "Voglio la quotazione completa",
-  "Voglio il pacchetto Annuncio",
-  "Voglio il pacchetto Completo",
-  "Ho un dubbio sui documenti",
-  "Voglio solo informazioni",
-];
-
-export function LeadForm({ defaultNeed = needs[0], valuation, zone, sourcePage }: Props) {
+export function LeadForm({ need, payload, zone, sourcePage, submitLabel = "Invia" }: Props) {
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [message, setMessage] = useState("");
   const wa = whatsappHref("Ciao, vorrei vendere casa da privato a Milano.");
@@ -27,8 +20,6 @@ export function LeadForm({ defaultNeed = needs[0], valuation, zone, sourcePage }
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const need = String(data.get("need"));
-    const pkg = packages.find((p) => need.includes(p.name));
     setState("sending");
     try {
       const res = await fetch("/api/lead", {
@@ -39,8 +30,7 @@ export function LeadForm({ defaultNeed = needs[0], valuation, zone, sourcePage }
           contact: data.get("contact"),
           need,
           zone: zone ?? null,
-          packageId: pkg?.id ?? null,
-          valuation: valuation ?? null,
+          valuation: payload ?? null,
           privacyConsent: data.get("privacy") === "on",
           marketingConsent: data.get("marketing") === "on",
           sourcePage,
@@ -53,10 +43,10 @@ export function LeadForm({ defaultNeed = needs[0], valuation, zone, sourcePage }
         return;
       }
       setState("sent");
-      setMessage("Richiesta inviata. Ti ricontattiamo entro un giorno lavorativo.");
+      setMessage("Fatto. Ti scriviamo entro un giorno lavorativo.");
     } catch {
       setState("error");
-      setMessage("Connessione assente. Controlla la rete e riprova.");
+      setMessage("Sei offline. Controlla la connessione e riprova.");
     }
   }
 
@@ -69,33 +59,25 @@ export function LeadForm({ defaultNeed = needs[0], valuation, zone, sourcePage }
   }
 
   return (
-    <form className="form" onSubmit={onSubmit} noValidate={false}>
+    <form className="form" onSubmit={onSubmit}>
       <div className="field">
         <label htmlFor="name">Nome</label>
         <input id="name" name="name" className="input" autoComplete="given-name" required maxLength={120} />
       </div>
       <div className="field">
-        <label htmlFor="contact">Email o telefono</label>
+        <label htmlFor="contact">Email o cellulare</label>
         <input id="contact" name="contact" className="input" autoComplete="email" required maxLength={200} />
       </div>
-      <div className="field full">
-        <label htmlFor="need">Cosa ti serve</label>
-        <select id="need" name="need" className="select" defaultValue={defaultNeed}>
-          {needs.map((n) => (
-            <option key={n}>{n}</option>
-          ))}
-        </select>
-      </div>
-      <label className="check full">
+      <label className="consent full">
         <input type="checkbox" name="privacy" required />
         <span>
-          Ho letto l&apos;<Link href="/privacy">informativa privacy</Link> e accetto di essere ricontattato per questa
+          Ho letto l&apos;<Link href="/privacy">informativa privacy</Link> e voglio essere ricontattato per questa
           richiesta.
         </span>
       </label>
-      <label className="check full">
+      <label className="consent full">
         <input type="checkbox" name="marketing" />
-        <span>Facoltativo: voglio ricevere aggiornamenti e offerte di Ediligo. Puoi revocarlo quando vuoi.</span>
+        <span>Facoltativo: mandatemi consigli e offerte di Ediligo. Posso disiscrivermi quando voglio.</span>
       </label>
       {state === "error" && (
         <p className="form-msg err full" role="alert">
@@ -103,11 +85,11 @@ export function LeadForm({ defaultNeed = needs[0], valuation, zone, sourcePage }
         </p>
       )}
       <div className="full" style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-        <button type="submit" className="btn btn-primary" disabled={state === "sending"}>
-          {state === "sending" ? "Invio in corso" : "Invia la richiesta"}
+        <button type="submit" className="btn btn-blue" disabled={state === "sending"}>
+          {state === "sending" ? "Invio in corso" : submitLabel}
         </button>
         {wa && (
-          <a className="btn btn-ghost" href={wa} target="_blank" rel="noopener noreferrer">
+          <a className="btn btn-soft" href={wa} target="_blank" rel="noopener noreferrer">
             Scrivici su WhatsApp
           </a>
         )}
